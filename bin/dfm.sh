@@ -89,7 +89,7 @@ if [ "x${mode}" = "xinstall" ]; then
             mkdir -p ${HOME}/${dir}
         done
         for file in $(find . -type f); do
-            cp -fp ${file} ${HOME}
+            cp -fp ${file} ${HOME}/${file}
         done
     done
 
