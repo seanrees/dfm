@@ -50,7 +50,7 @@ do
             paths="${paths} secure"
             shift;;
         -t)
-            (sleep 5; kill -9 ${mypid} 2>&1 >/dev/null) &
+            (sleep 10; kill -9 ${mypid} 2>&1 >/dev/null) &
             tpid=$!
             shift;;
         -u)
@@ -127,5 +127,5 @@ fi
 
 # If we ran with a timeout, then kill the timeout watcher.
 if [ "x${tpid}" != "x" ]; then
-    kill -15 ${tpid}
+    kill -15 ${tpid} 2>&1 >/dev/null
 fi
