@@ -1,9 +1,11 @@
 #!/bin/sh
 #
 # Usage: install.sh [-isu]
+#   -c: Install auto-update cron.
 #   -i: Install files.
 #   -p: Run git pull first.
 #   -s: Include "secure" files as well.
+#   -t: Timeout command after a few seconds.
 #   -u: Update files in git.
 #
 
@@ -17,9 +19,11 @@ cwd=$(pwd -P)
 base="$(dirname ${cwd}/${0})/.."
 hostname=$(hostname)
 whoami="${USER}@${hostname}"
+mypid=$$
+tpid=
 
 # Arg parsing.
-args=$(getopt ipsu $*)
+args=$(getopt cipstu $*)
 if [ $? != 0 ]; then
     echo "Usage: $0 [-s]"
     exit 2
@@ -30,6 +34,9 @@ for i
 do
     case "$i"
     in
+        -c)
+            mode="cron"
+            shift;;
         -i)
             mode="install"
             shift;;
@@ -38,6 +45,10 @@ do
             shift;;
         -s)
             paths="${paths} secure"
+            shift;;
+        -t)
+            (sleep 5; kill -9 ${mypid} 2>&1 >/dev/null) &
+            tpid=$!
             shift;;
         -u)
             mode="update"
@@ -48,7 +59,24 @@ do
     esac
 done
 
+
 # Real work.
+if [ "x${mode}" = "xcron" ]; then
+    if [ ! -f ${HOME}/bin/dfm ]; then
+        echo "Dotfile manager not installed. Run dfm -i."
+        exit 3
+    fi
+
+    tmp=$(mktemp ${TMPDIR}/dfm-cron-XXXXXX)
+    crontab -l | grep -v bin/dfm >${tmp} 2>/dev/null
+
+    cat <<EOF >> ${tmp}
+*/5 * * * * $HOME/bin/dfm -ipt 2>&1 >/dev/null
+EOF
+    crontab ${tmp}
+    rm -f ${tmp}
+fi
+
 if [ "x${mode}" = "xinstall" ]; then
     if [ "x${pull}" = "xtrue" ]; then
         git pull
@@ -90,4 +118,9 @@ if [ "x${mode}" = "xupdate" ]; then
     cd ${base}
     git commit -m "${whoami} ran ${mode} with paths: ${paths}"
     git push origin master
+fi
+
+# If we ran with a timeout, then kill the timeout watcher.
+if [ "x${tpid}" != "x" ]; then
+    kill -15 ${tpid}
 fi
