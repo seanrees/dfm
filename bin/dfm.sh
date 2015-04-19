@@ -67,8 +67,8 @@ if [ "x${mode}" = "xcron" ]; then
         exit 3
     fi
 
-    tmp=$(mktemp ${TMPDIR}/dfm-cron-XXXXXX)
-    crontab -l | grep -v bin/dfm >${tmp} 2>/dev/null
+    tmp=$(mktemp ${TMPDIR-/tmp}/dfm-cron-XXXXXX)
+    crontab -l 2>/dev/null | grep -v bin/dfm >${tmp}
 
     cat <<EOF >> ${tmp}
 */5 * * * * $HOME/bin/dfm -ipt 2>&1 >/dev/null
