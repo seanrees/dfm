@@ -30,6 +30,9 @@ if [ $? != 0 ]; then
 fi
 set -- $args
 
+# Just in case we're on FreeBSD
+PATH=${PATH}:/usr/local/bin
+
 for i
 do
     case "$i"
