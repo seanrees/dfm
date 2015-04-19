@@ -42,8 +42,7 @@ done
 
 # Real work.
 if [ "x${mode}" = "xinstall" ]; then
-    for path in ${paths}
-    do
+    for path in ${paths}; do
         echo "Installing ${base}/${path}..."
         cp -Rpf ${base}/${path}/.* ${HOME}
 
@@ -55,5 +54,21 @@ if [ "x${mode}" = "xinstall" ]; then
 fi
 
 if [ "x${mode}" = "xupdate" ]; then
-    echo "Not yet implemented."
+    for path in ${paths}; do
+        cd ${base}/${path}
+
+        for i in $(find . -type f); do
+            cp -Rpf ${HOME}/${i} ${base}/${path}/${i}
+        done
+
+        cd ${base}
+        git add --all ${path}
+
+        cd ${cwd}
+    done
+
+    cd ${base}
+    git commit -m \
+        "${USER}@$(hostname) ran ${mode} with paths: ${paths}"
+    git push origin master
 fi
