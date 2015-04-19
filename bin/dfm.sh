@@ -2,21 +2,24 @@
 #
 # Usage: install.sh [-isu]
 #   -i: Install files.
+#   -p: Run git pull first.
 #   -s: Include "secure" files as well.
 #   -u: Update files in git.
 #
 
-# Base paths to install.
+# Base paths to install. These are affected by args.
 paths="data"
 mode="install"
+pull="false"
 
+# Useful parameters for the rest of the script.
 cwd=$(pwd -P)
 base="$(dirname ${cwd}/${0})/.."
 hostname=$(hostname)
 whoami="${USER}@${hostname}"
 
 # Arg parsing.
-args=$(getopt isu $*)
+args=$(getopt ipsu $*)
 if [ $? != 0 ]; then
     echo "Usage: $0 [-s]"
     exit 2
@@ -29,6 +32,9 @@ do
     in
         -i)
             mode="install"
+            shift;;
+        -p)
+            pull="true"
             shift;;
         -s)
             paths="${paths} secure"
@@ -44,6 +50,10 @@ done
 
 # Real work.
 if [ "x${mode}" = "xinstall" ]; then
+    if [ "x${pull}" = "xtrue" ]; then
+        git pull
+    fi
+
     for path in ${paths}; do
         echo "Installing ${base}/${path}..."
         cp -Rpf ${base}/${path}/.* ${HOME}
