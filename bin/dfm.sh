@@ -84,12 +84,13 @@ if [ "x${mode}" = "xinstall" ]; then
 
     for path in ${paths}; do
         echo "Installing ${base}/${path}..."
-        cp -Rpf ${base}/${path}/.* ${HOME}
-
-        # In case there are non dot-files.
-        if [ -f ${base}/${path}/* ]; then
-            cp -Rpf ${base}/${path}/* ${HOME}
-        fi
+        cd ${base}/${path}
+        for dir in $(find . -type d); do
+            mkdir -p ${HOME}/${dir}
+        done
+        for file in $(find . -type f); do
+            cp -fp ${file} ${HOME}
+        done
     done
 
     cat <<EOF > ${HOME}/bin/dfm
